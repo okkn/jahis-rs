@@ -821,7 +821,7 @@ impl FromStr for PatientRecord {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         lazy_static! {
-            static ref RE: Regex = Regex::new(r"^(\d+),([^,]*),(\d),(\d{8}|\w\d{6}),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),([0-9]+(?:[.][0-9]*)?|[.][0-9]+),([^,]*)$").unwrap();
+            static ref RE: Regex = Regex::new(r"^(\d+),([^,]*),(\d),(\d{8}|\w\d{6}),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*),((?:[0-9]+(?:[.][0-9]*)?|[.][0-9]+)?),([^,]*)$").unwrap();
         }
         for cap in RE.captures_iter(s) {
             if (&cap[1]) == "1" {
