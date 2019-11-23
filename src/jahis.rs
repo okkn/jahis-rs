@@ -2918,7 +2918,7 @@ impl FromStr for DispensingInformationBlock {
         if temp_prescription_block_string.len() > 0  {
             prescriptions.push(temp_prescription_block_string.join("\r\n").parse()?);
         }
-        if prescriptions.len() > 0 && date.is_some() && pharmacy.is_some() {
+        if date.is_some() && pharmacy.is_some() {
             Ok(Self {
                 date: date.unwrap(),
                 pharmacy: pharmacy.unwrap(),
@@ -2931,9 +2931,7 @@ impl FromStr for DispensingInformationBlock {
                 from_patient: from_patient,
             })
         } else {
-            if prescriptions.len() == 0 {
-                Err(Error::MissingRequiredRecord(format!("PrescriptionBlock is required.")))
-            } else if date.is_none() {
+            if date.is_none() {
                 Err(Error::MissingRequiredRecord(format!("DateRecord is required.")))
             } else {
                 Err(Error::MissingRequiredRecord(format!("PharmacyRecord is required.")))
