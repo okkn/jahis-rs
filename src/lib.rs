@@ -1,1 +1,2 @@
-pub mod jahis;
+mod jahis;
+pub use jahis::*;
