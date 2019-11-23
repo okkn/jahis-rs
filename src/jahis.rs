@@ -2143,7 +2143,7 @@ impl InformationProvisionRecord {
         format!("{},{},{},{}",
             self.record_number().to_string(), // 411
             self.content,
-            self.information_type,
+            self.information_type.to_code(),
             self.created_by.to_code()
         )
     }
