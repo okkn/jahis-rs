@@ -1,0 +1,12 @@
+[package]
+name = "jahis"
+version = "0.0.1"
+authors = ["okkn"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4"
+lazy_static = "1.4"
+regex = "1"
