@@ -972,11 +972,7 @@ impl VersionRecord {
         Self {number: number, output_category: output_category}
     }
     pub fn to_code(&self) -> String {
-        //format!("JAHISTC{:>02},{}", self.number, self.output_category.to_code())
-        [
-            format!("JAHISTC{:>02}", self.number),
-            self.output_category.to_code()
-        ].join(",")
+        format!("JAHISTC{:>02},{}", self.number, self.output_category.to_code())
     }
 }
 
