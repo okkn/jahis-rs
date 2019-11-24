@@ -2937,7 +2937,6 @@ impl FromStr for DispensingInformationBlock {
                 Err(Error::MissingRequiredRecord(format!("PharmacyRecord is required.")))
             }
         }
-
     }
 }
 
@@ -3142,7 +3141,6 @@ impl FromStr for MedicineNotebook {
                 Err(Error::MissingRequiredRecord(format!("PatientRecord is required.")))
             }
         }
-
     }
 }
 
