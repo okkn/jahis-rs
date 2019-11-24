@@ -13,6 +13,17 @@ use chrono;
 use chrono::Datelike;
 use regex::Regex;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+/// An error which can be return when parsing a date string.
+pub enum Error {
+    InvalidArgument,
+    InvalidRecordLine(String),
+    GotUnexpectedRecordLine(String),
+    MissingRequiredRecord(String),
+    ParseIntError(num::ParseIntError),
+    ParseFloatError(num::ParseFloatError),
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 /// Appended Table 1: Japanese era calendar scheme (Gengo)
 pub enum GengoYear {
@@ -595,22 +606,6 @@ impl TryFrom<u32> for RecordCreator {
     }
 }
 
-/// An error which can be return when parsing a date string.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Error {
-    InvalidArgument,
-    InvalidRecordLine(String),
-    GotUnexpectedRecordLine(String),
-    MissingRequiredRecord(String),
-    ParseIntError(num::ParseIntError),
-    ParseFloatError(num::ParseFloatError),
-}
-
-pub trait Record {
-    fn record_number(&self) -> u32;
-    fn cols(&self) -> u32;
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum OutputCategory {
     ToPatient = 1, // 医療機関・薬局から患者等に情報を提供する場合
@@ -654,48 +649,6 @@ impl TryFrom<u32> for OutputCategory {
     }
 }
 
-/// Version record (バージョンレコード)
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct VersionRecord {
-    version: u32,
-    output_category: OutputCategory, 
-}
-
-impl VersionRecord {
-    pub fn new(version: u32, output_category: OutputCategory) -> Self {
-        Self {version: version, output_category: output_category}
-    }
-    pub fn to_code(&self) -> String {
-        //format!("JAHISTC{:>02},{}", self.version, self.output_category.to_code())
-        [
-            format!("JAHISTC{:>02}", self.version),
-            self.output_category.to_code()
-        ].join(",")
-    }
-}
-
-impl Default for VersionRecord {
-    fn default() -> Self {
-        Self {version: 6, output_category: OutputCategory::ToPatient}
-    }
-}
-
-impl FromStr for VersionRecord {
-    type Err = Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r"^JAHISTC(\d\d),(\d)$").unwrap();
-        }
-        for cap in RE.captures_iter(s) {
-            return Ok(Self {
-                version: (&cap[1]).parse().map_err(Error::ParseIntError)?,
-                output_category: (&cap[2]).parse()?,
-            })
-        }
-        Err(Error::InvalidArgument)
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Gender {
     Male = 1, // 男性
@@ -736,6 +689,267 @@ impl TryFrom<u32> for Gender {
             2 => Ok(Self::Female),
             _ => Err(Error::InvalidArgument),
         }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum SpecialPatientNoteCategory {
+    Allergy = 1, // アレルギー歴
+    AdverseEvent = 2, // 副作用歴
+    PastHistory = 3, // 既往歴
+    Other = 9, // その他
+}
+
+impl SpecialPatientNoteCategory {
+    pub fn to_code(&self) -> String {
+        format!("{}", *self as u32)
+    }
+}
+
+impl fmt::Display for SpecialPatientNoteCategory {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Self::Allergy => write!(f, "アレルギー歴"),
+            Self::AdverseEvent => write!(f, "副作用歴"),
+            Self::PastHistory => write!(f, "既往歴"),
+            Self::Other => write!(f, "その他")
+        }
+    }
+}
+
+impl FromStr for SpecialPatientNoteCategory {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "1" | "アレルギー歴" | "アレルギー" | "allergy" => Ok(Self::Allergy),
+            "2" | "副作用歴" | "副作用" | "adverse event" => Ok(Self::AdverseEvent),
+            "3" | "既往歴" | "既往" | "past history" => Ok(Self::PastHistory),
+            "9" | "その他" | "other" => Ok(Self::Other),
+            _ => Err(Error::InvalidArgument),
+        }
+    }
+}
+
+impl TryFrom<u32> for SpecialPatientNoteCategory {
+    type Error = Error;
+    fn try_from(n: u32) -> Result<Self, Self::Error> {
+        match n {
+            1 => Ok(Self::Allergy),
+            2 => Ok(Self::AdverseEvent),
+            3 => Ok(Self::PastHistory),
+            9 => Ok(Self::Other),
+            _ => Err(Error::InvalidArgument),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum DrugCodeType {
+    None, // コードなし
+    Receipt, // レセプト電算コード
+    Mhlw, // 厚労省コード
+    Yj, // YJコード
+    Hot, // HOTコード
+}
+
+impl DrugCodeType {
+    pub fn to_code(&self) -> String {
+        match *self {
+            Self::None => format!("1"),
+            Self::Receipt => format!("2"),
+            Self::Mhlw => format!("3"),
+            Self::Yj => format!("4"),
+            Self::Hot => format!("6"),
+        }
+    }
+}
+
+impl fmt::Display for DrugCodeType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Self::None => write!(f, "コードなし"),
+            Self::Receipt => write!(f, "レセプト電算コード"),
+            Self::Mhlw => write!(f, "厚労省コード"),
+            Self::Yj => write!(f, "YJコード"),
+            Self::Hot => write!(f, "HOTコード"),
+        }
+    }
+}
+
+impl FromStr for DrugCodeType {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "1" | "コードなし" | "none" => Ok(Self::None),
+            "2" | "レセプト電算コード" | "レセプト" | "receipt" => Ok(Self::Receipt),
+            "3" | "厚労省コード" | "厚生労働省コード" | "厚労省" | "厚生労働省" | "MHLW" => Ok(Self::Mhlw),
+            "4" | "YJコード" | "YJ" => Ok(Self::Yj),
+            "6" | "HOTコード" | "HOT" => Ok(Self::Hot),
+            _ => Err(Error::InvalidArgument),
+        }
+    }
+}
+
+impl TryFrom<u32> for DrugCodeType {
+    type Error = Error;
+    fn try_from(n: u32) -> Result<Self, Self::Error> {
+        match n {
+            1 => Ok(Self::None),
+            2 => Ok(Self::Receipt),
+            3 => Ok(Self::Mhlw),
+            4 => Ok(Self::Yj),
+            6 => Ok(Self::Hot),
+            _ => Err(Error::InvalidArgument),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum UsageCodeType {
+    None, // コードなし
+    Jami, // JAMI用法コード
+}
+
+impl UsageCodeType {
+    pub fn to_code(&self) -> String {
+        match *self {
+            Self::None => format!("1"),
+            Self::Jami => format!("2"),
+        }
+    }
+}
+
+impl fmt::Display for UsageCodeType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Self::None => write!(f, "コードなし"),
+            Self::Jami => write!(f, "JAMI用法コード"),
+        }
+    }
+}
+
+impl FromStr for UsageCodeType {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "1" | "コードなし" | "none" => Ok(Self::None),
+            "2" | "JAMI用法コード" | "JAMIコード" | "JAMI" => Ok(Self::Jami),
+            _ => Err(Error::InvalidArgument),
+        }
+    }
+}
+
+impl TryFrom<u32> for UsageCodeType {
+    type Error = Error;
+    fn try_from(n: u32) -> Result<Self, Self::Error> {
+        match n {
+            1 => Ok(Self::None),
+            2 => Ok(Self::Jami),
+            _ => Err(Error::InvalidArgument),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ProvidedInformationType {
+    AdverseEventInHospital, // 30: 入院中に副作用が発現した薬剤に関する情報
+    PostDischargeCare, // 31: 退院後の療養を担う保険医療機関での投薬又は
+                       // 保険薬局での調剤に必要な服薬の状況
+                       // 及び投薬上の工夫に関する情報
+    Other, // 99: その他
+}
+
+impl ProvidedInformationType {
+    pub fn to_code(&self) -> String {
+        match *self {
+            Self::AdverseEventInHospital => format!("30"),
+            Self::PostDischargeCare => format!("31"),
+            Self::Other => format!("99"),
+        }
+    }
+}
+
+impl fmt::Display for ProvidedInformationType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Self::AdverseEventInHospital
+                 => write!(f, "入院中に副作用が発現した薬剤に関する情報"),
+            Self::PostDischargeCare
+                => write!(f, "退院後の療養を担う保険医療機関での投薬又は保険薬局での調剤に\
+                                必要な服薬の状況及び投薬上の工夫に関する情報"),
+            Self::Other => write!(f, "その他"),
+        }
+    }
+}
+
+impl FromStr for ProvidedInformationType {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "30" => Ok(Self::AdverseEventInHospital),
+            "31" => Ok(Self::PostDischargeCare),
+            "99" => Ok(Self::Other),
+            _ => Err(Error::InvalidArgument),
+        }
+    }
+}
+
+impl TryFrom<u32> for ProvidedInformationType {
+    type Error = Error;
+    fn try_from(n: u32) -> Result<Self, Self::Error> {
+        match n {
+            30 => Ok(Self::AdverseEventInHospital),
+            31 => Ok(Self::PostDischargeCare),
+            99 => Ok(Self::Other),
+            _ => Err(Error::InvalidArgument),
+        }
+    }
+}
+
+pub trait Record {
+    fn record_number(&self) -> u32;
+    fn cols(&self) -> u32;
+}
+
+/// Version record (バージョンレコード)
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct VersionRecord {
+    version: u32,
+    output_category: OutputCategory, 
+}
+
+impl VersionRecord {
+    pub fn new(version: u32, output_category: OutputCategory) -> Self {
+        Self {version: version, output_category: output_category}
+    }
+    pub fn to_code(&self) -> String {
+        //format!("JAHISTC{:>02},{}", self.version, self.output_category.to_code())
+        [
+            format!("JAHISTC{:>02}", self.version),
+            self.output_category.to_code()
+        ].join(",")
+    }
+}
+
+impl Default for VersionRecord {
+    fn default() -> Self {
+        Self {version: 6, output_category: OutputCategory::ToPatient}
+    }
+}
+
+impl FromStr for VersionRecord {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^JAHISTC(\d\d),(\d)$").unwrap();
+        }
+        for cap in RE.captures_iter(s) {
+            return Ok(Self {
+                version: (&cap[1]).parse().map_err(Error::ParseIntError)?,
+                output_category: (&cap[2]).parse()?,
+            })
+        }
+        Err(Error::InvalidArgument)
     }
 }
 
@@ -842,58 +1056,6 @@ impl FromStr for PatientRecord {
         Err(Error::InvalidArgument)
     }
 }
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum SpecialPatientNoteCategory {
-    Allergy = 1, // アレルギー歴
-    AdverseEvent = 2, // 副作用歴
-    PastHistory = 3, // 既往歴
-    Other = 9, // その他
-}
-
-impl SpecialPatientNoteCategory {
-    pub fn to_code(&self) -> String {
-        format!("{}", *self as u32)
-    }
-}
-
-impl fmt::Display for SpecialPatientNoteCategory {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Self::Allergy => write!(f, "アレルギー歴"),
-            Self::AdverseEvent => write!(f, "副作用歴"),
-            Self::PastHistory => write!(f, "既往歴"),
-            Self::Other => write!(f, "その他")
-        }
-    }
-}
-
-impl FromStr for SpecialPatientNoteCategory {
-    type Err = Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "1" | "アレルギー歴" | "アレルギー" | "allergy" => Ok(Self::Allergy),
-            "2" | "副作用歴" | "副作用" | "adverse event" => Ok(Self::AdverseEvent),
-            "3" | "既往歴" | "既往" | "past history" => Ok(Self::PastHistory),
-            "9" | "その他" | "other" => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
-        }
-    }
-}
-
-impl TryFrom<u32> for SpecialPatientNoteCategory {
-    type Error = Error;
-    fn try_from(n: u32) -> Result<Self, Self::Error> {
-        match n {
-            1 => Ok(Self::Allergy),
-            2 => Ok(Self::AdverseEvent),
-            3 => Ok(Self::PastHistory),
-            9 => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
-        }
-    }
-}
-
 
 /// No 2. Special patient note record (患者特記レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1457,67 +1619,6 @@ impl FromStr for PhysicianRecord {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum DrugCodeType {
-    None, // コードなし
-    Receipt, // レセプト電算コード
-    Mhlw, // 厚労省コード
-    Yj, // YJコード
-    Hot, // HOTコード
-}
-
-impl DrugCodeType {
-    pub fn to_code(&self) -> String {
-        match *self {
-            Self::None => format!("1"),
-            Self::Receipt => format!("2"),
-            Self::Mhlw => format!("3"),
-            Self::Yj => format!("4"),
-            Self::Hot => format!("6"),
-        }
-    }
-}
-
-impl fmt::Display for DrugCodeType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Self::None => write!(f, "コードなし"),
-            Self::Receipt => write!(f, "レセプト電算コード"),
-            Self::Mhlw => write!(f, "厚労省コード"),
-            Self::Yj => write!(f, "YJコード"),
-            Self::Hot => write!(f, "HOTコード"),
-        }
-    }
-}
-
-impl FromStr for DrugCodeType {
-    type Err = Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "1" | "コードなし" | "none" => Ok(Self::None),
-            "2" | "レセプト電算コード" | "レセプト" | "receipt" => Ok(Self::Receipt),
-            "3" | "厚労省コード" | "厚生労働省コード" | "厚労省" | "厚生労働省" | "MHLW" => Ok(Self::Mhlw),
-            "4" | "YJコード" | "YJ" => Ok(Self::Yj),
-            "6" | "HOTコード" | "HOT" => Ok(Self::Hot),
-            _ => Err(Error::InvalidArgument),
-        }
-    }
-}
-
-impl TryFrom<u32> for DrugCodeType {
-    type Error = Error;
-    fn try_from(n: u32) -> Result<Self, Self::Error> {
-        match n {
-            1 => Ok(Self::None),
-            2 => Ok(Self::Receipt),
-            3 => Ok(Self::Mhlw),
-            4 => Ok(Self::Yj),
-            6 => Ok(Self::Hot),
-            _ => Err(Error::InvalidArgument),
-        }
-    }
-}
-
 /// No 201. Drug record (薬品レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DrugRecord {
@@ -1732,52 +1833,6 @@ impl FromStr for DrugNoticeRecord {
             }
         }
         Err(Error::InvalidArgument)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum UsageCodeType {
-    None, // コードなし
-    Jami, // JAMI用法コード
-}
-
-impl UsageCodeType {
-    pub fn to_code(&self) -> String {
-        match *self {
-            Self::None => format!("1"),
-            Self::Jami => format!("2"),
-        }
-    }
-}
-
-impl fmt::Display for UsageCodeType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Self::None => write!(f, "コードなし"),
-            Self::Jami => write!(f, "JAMI用法コード"),
-        }
-    }
-}
-
-impl FromStr for UsageCodeType {
-    type Err = Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "1" | "コードなし" | "none" => Ok(Self::None),
-            "2" | "JAMI用法コード" | "JAMIコード" | "JAMI" => Ok(Self::Jami),
-            _ => Err(Error::InvalidArgument),
-        }
-    }
-}
-
-impl TryFrom<u32> for UsageCodeType {
-    type Error = Error;
-    fn try_from(n: u32) -> Result<Self, Self::Error> {
-        match n {
-            1 => Ok(Self::None),
-            2 => Ok(Self::Jami),
-            _ => Err(Error::InvalidArgument),
-        }
     }
 }
 
@@ -2062,62 +2117,6 @@ impl FromStr for NoticeRecord {
             }
         }
         Err(Error::InvalidArgument)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum ProvidedInformationType {
-    AdverseEventInHospital, // 30: 入院中に副作用が発現した薬剤に関する情報
-    PostDischargeCare, // 31: 退院後の療養を担う保険医療機関での投薬又は
-                       // 保険薬局での調剤に必要な服薬の状況
-                       // 及び投薬上の工夫に関する情報
-    Other, // 99: その他
-}
-
-impl ProvidedInformationType {
-    pub fn to_code(&self) -> String {
-        match *self {
-            Self::AdverseEventInHospital => format!("30"),
-            Self::PostDischargeCare => format!("31"),
-            Self::Other => format!("99"),
-        }
-    }
-}
-
-impl fmt::Display for ProvidedInformationType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Self::AdverseEventInHospital
-                 => write!(f, "入院中に副作用が発現した薬剤に関する情報"),
-            Self::PostDischargeCare
-                => write!(f, "退院後の療養を担う保険医療機関での投薬又は保険薬局での調剤に\
-                                必要な服薬の状況及び投薬上の工夫に関する情報"),
-            Self::Other => write!(f, "その他"),
-        }
-    }
-}
-
-impl FromStr for ProvidedInformationType {
-    type Err = Error;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "30" => Ok(Self::AdverseEventInHospital),
-            "31" => Ok(Self::PostDischargeCare),
-            "99" => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
-        }
-    }
-}
-
-impl TryFrom<u32> for ProvidedInformationType {
-    type Error = Error;
-    fn try_from(n: u32) -> Result<Self, Self::Error> {
-        match n {
-            30 => Ok(Self::AdverseEventInHospital),
-            31 => Ok(Self::PostDischargeCare),
-            99 => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
-        }
     }
 }
 
