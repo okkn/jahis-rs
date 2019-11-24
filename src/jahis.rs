@@ -963,18 +963,18 @@ pub trait Record {
 /// Version record (バージョンレコード)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct VersionRecord {
-    version: u32,
+    number: u32,
     output_category: OutputCategory, 
 }
 
 impl VersionRecord {
-    pub fn new(version: u32, output_category: OutputCategory) -> Self {
-        Self {version: version, output_category: output_category}
+    pub fn new(number: u32, output_category: OutputCategory) -> Self {
+        Self {number: number, output_category: output_category}
     }
     pub fn to_code(&self) -> String {
-        //format!("JAHISTC{:>02},{}", self.version, self.output_category.to_code())
+        //format!("JAHISTC{:>02},{}", self.number, self.output_category.to_code())
         [
-            format!("JAHISTC{:>02}", self.version),
+            format!("JAHISTC{:>02}", self.number),
             self.output_category.to_code()
         ].join(",")
     }
@@ -982,7 +982,7 @@ impl VersionRecord {
 
 impl Default for VersionRecord {
     fn default() -> Self {
-        Self {version: 6, output_category: OutputCategory::ToPatient}
+        Self {number: 6, output_category: OutputCategory::ToPatient}
     }
 }
 
@@ -994,7 +994,7 @@ impl FromStr for VersionRecord {
         }
         for cap in RE.captures_iter(s) {
             return Ok(Self {
-                version: (&cap[1]).parse().map_err(Error::ParseIntError)?,
+                number: (&cap[1]).parse().map_err(Error::ParseIntError)?,
                 output_category: (&cap[2]).parse()?,
             })
         }
