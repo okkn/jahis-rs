@@ -16,10 +16,11 @@ use regex::Regex;
 #[derive(Debug, Clone, PartialEq, Eq)]
 /// An error which can be return when parsing a date string.
 pub enum Error {
-    InvalidArgument,
+    InvalidArgument(String),
     InvalidRecordLine(String),
     GotUnexpectedRecordLine(String),
     MissingRequiredRecord(String),
+    Unreachable(String),
     ParseIntError(num::ParseIntError),
     ParseFloatError(num::ParseFloatError),
 }
@@ -72,10 +73,14 @@ impl FromStr for GengoYear {
                 "昭和" | "㍼" | "S" | "s" => return Ok(Self::Showa(year)),
                 "大正" | "㍽" | "T" | "t" => return Ok(Self::Taisho(year)),
                 "明治" | "㍾" | "M" | "m" => return Ok(Self::Meiji(year)),
-                _ => return Err(Error::InvalidArgument),
+                _ => return Err(Error::Unreachable(
+                    format!("Unreachable code in GengoYear, got \"{}\"", s)
+                )),
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidArgument(
+            format!("Cannot convert str to GengoYear, got \"{}\"", s)
+        ))
     }
 }
 
@@ -138,7 +143,9 @@ impl Date {
                 } else if y > 1872 {
                     return Ok(format!("M{:>02}{:>02}{:>02}", y - 1867, m, d));
                 } else {
-                    return Err(Error::InvalidArgument);
+                    return Err(Error::InvalidArgument(
+                        format!("Cannot convert seireki8 to wareki7, got \"{:?}\"", *self)
+                    ));
                 }
             },
             Self::Wareki{gengo_year: gy, month: m, day: d} => {
@@ -185,7 +192,9 @@ impl FromStr for Date {
                 return Ok(Date::Wareki{gengo_year: gy.parse::<GengoYear>().unwrap(), month: m, day: d})
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidArgument(
+            format!("Cannot convert str to Date, got \"{}\"", s)
+        ))
     }
 }
 
@@ -374,7 +383,9 @@ impl FromStr for Prefecture {
             "45" | "JP-45" | "宮崎" | "宮崎県" | "Miyazaki" => Ok(Self::Miyazaki),
             "46" | "JP-46" | "鹿児島" | "鹿児島県" | "Kagoshima" => Ok(Self::Kagoshima),
             "47" | "JP-47" | "沖縄" | "沖縄県" | "Okinawa" => Ok(Self::Okinawa),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot covert str to Prefecture, got\"{}\"", s)
+            )),
         }
     }
 }
@@ -430,7 +441,9 @@ impl TryFrom<u32> for Prefecture {
             45 => Ok(Self::Miyazaki),
             46 => Ok(Self::Kagoshima),
             47 => Ok(Self::Okinawa),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot covert u32 to Prefecture, got {}", n)
+            )),
         }
     }
 }
@@ -466,7 +479,9 @@ impl FromStr for FeeTable {
             "1" | "医科" => Ok(Self::Medicine),
             "3" | "歯科" => Ok(Self::Dentistry),
             "4" | "調剤" => Ok(Self::Pharmacy),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert str to FeeTable, got \"{}\"", s)
+            )),
         }
     }
 }
@@ -478,7 +493,9 @@ impl TryFrom<u32> for FeeTable {
             1 => Ok(Self::Medicine),
             3 => Ok(Self::Dentistry),
             4 => Ok(Self::Pharmacy),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert u32 to FeeTable, got {}", n)
+            )),
         }
     }
 }
@@ -532,7 +549,9 @@ impl FromStr for DosageForm {
             "7" | "湯" => Ok(Self::Decoction),
             "9" | "材料" => Ok(Self::Material),
             "10" | "その他" => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert str to DosageForm, got\"{}\"", s)
+            )),
         }
     }
 }
@@ -550,7 +569,9 @@ impl TryFrom<u32> for DosageForm {
             7 => Ok(Self::Decoction),
             9 => Ok(Self::Material),
             10 => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert u32 to DosageForm, got \"{}\"", n)
+            )),
         }
     }
 }
@@ -588,7 +609,9 @@ impl FromStr for RecordCreator {
             "2" | "患者等" | "患者など" | "患者" => Ok(Self::Patient),
             "8" | "その他" => Ok(Self::Other),
             "9" | "不明" => Ok(Self::Unknown),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert str to RecordCreator, got \"{}\"", s)
+            )),
         }
     }
 }
@@ -601,7 +624,9 @@ impl TryFrom<u32> for RecordCreator {
             2 => Ok(Self::Patient),
             8 => Ok(Self::Other),
             9 => Ok(Self::Unknown),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert u32 to RecordCreator, got {}", n)
+            )),
         }
     }
 }
@@ -633,7 +658,9 @@ impl FromStr for OutputCategory {
         match s {
             "1" => Ok(Self::ToPatient),
             "2" => Ok(Self::FromPatinet),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert str to OutputCategory, got \"{}\"", s)
+            )),
         }
     }
 }
@@ -644,7 +671,9 @@ impl TryFrom<u32> for OutputCategory {
         match n {
             1 => Ok(Self::ToPatient),
             2 => Ok(Self::FromPatinet),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert u32 to OutputCategory, got {}", n)
+            )),
         }
     }
 }
@@ -676,7 +705,9 @@ impl FromStr for Gender {
         match s {
             "1" | "男" | "男性" | "male" => Ok(Self::Male),
             "2" | "女" | "女性" | "female" => Ok(Self::Female),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert str to Gender, got \"{}\"", s)
+            )),
         }
     }
 }
@@ -687,7 +718,9 @@ impl TryFrom<u32> for Gender {
         match n {
             1 => Ok(Self::Male),
             2 => Ok(Self::Female),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert u32 to Gender, got {}", n)
+            )),
         }
     }
 }
@@ -725,7 +758,9 @@ impl FromStr for SpecialPatientNoteCategory {
             "2" | "副作用歴" | "副作用" | "adverse event" => Ok(Self::AdverseEvent),
             "3" | "既往歴" | "既往" | "past history" => Ok(Self::PastHistory),
             "9" | "その他" | "other" => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert str to SpecialPatientNoteCategory, got \"{}\"", s)
+            )),
         }
     }
 }
@@ -738,7 +773,9 @@ impl TryFrom<u32> for SpecialPatientNoteCategory {
             2 => Ok(Self::AdverseEvent),
             3 => Ok(Self::PastHistory),
             9 => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert u32 to SpecialPatientNoteCategory, got {}", n)
+            )),
         }
     }
 }
@@ -785,7 +822,9 @@ impl FromStr for DrugCodeType {
             "3" | "厚労省コード" | "厚生労働省コード" | "厚労省" | "厚生労働省" | "MHLW" => Ok(Self::Mhlw),
             "4" | "YJコード" | "YJ" => Ok(Self::Yj),
             "6" | "HOTコード" | "HOT" => Ok(Self::Hot),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert str to DrugCodeType, got \"{}\"", s)
+            )),
         }
     }
 }
@@ -799,7 +838,9 @@ impl TryFrom<u32> for DrugCodeType {
             3 => Ok(Self::Mhlw),
             4 => Ok(Self::Yj),
             6 => Ok(Self::Hot),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert u32 to DrugCodeType, got {}", n)
+            )),
         }
     }
 }
@@ -834,7 +875,9 @@ impl FromStr for UsageCodeType {
         match s {
             "1" | "コードなし" | "none" => Ok(Self::None),
             "2" | "JAMI用法コード" | "JAMIコード" | "JAMI" => Ok(Self::Jami),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert str to UsageCodeType, got \"{}\"", s)
+            )),
         }
     }
 }
@@ -845,7 +888,9 @@ impl TryFrom<u32> for UsageCodeType {
         match n {
             1 => Ok(Self::None),
             2 => Ok(Self::Jami),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert u32 to UsageCodeType, got {}", n)
+            )),
         }
     }
 }
@@ -889,7 +934,9 @@ impl FromStr for ProvidedInformationType {
             "30" => Ok(Self::AdverseEventInHospital),
             "31" => Ok(Self::PostDischargeCare),
             "99" => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert str to ProvidedInformationType, got \"{}\"", s)
+            )),
         }
     }
 }
@@ -901,7 +948,9 @@ impl TryFrom<u32> for ProvidedInformationType {
             30 => Ok(Self::AdverseEventInHospital),
             31 => Ok(Self::PostDischargeCare),
             99 => Ok(Self::Other),
-            _ => Err(Error::InvalidArgument),
+            _ => Err(Error::InvalidArgument(
+                format!("Cannot convert u32 to ProvidedInformationType, got \"{}\"", n)
+            )),
         }
     }
 }
@@ -949,7 +998,9 @@ impl FromStr for VersionRecord {
                 output_category: (&cap[2]).parse()?,
             })
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to VersionRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1053,7 +1104,9 @@ impl FromStr for PatientRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to PatientRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1119,7 +1172,9 @@ impl FromStr for SpecialPatientNoteRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to SpecialPatientNoteRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1190,7 +1245,9 @@ impl FromStr for OtcDrugRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to OtcDrugRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1256,7 +1313,9 @@ impl FromStr for MemoRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to MemoRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1313,7 +1372,9 @@ impl FromStr for DateRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to DateRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1406,7 +1467,9 @@ impl FromStr for PharmacyRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to PharmacyRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1472,7 +1535,9 @@ impl FromStr for PharmacistRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to PharmacistRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1549,7 +1614,9 @@ impl FromStr for MedicalInstitutionRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to MedicalInstitutionRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1615,7 +1682,9 @@ impl FromStr for PhysicianRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to PhysicianRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1702,7 +1771,9 @@ impl FromStr for DrugRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to DrugRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1767,7 +1838,9 @@ impl FromStr for DrugSupplementaryRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to DrugSupplementaryRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1832,7 +1905,9 @@ impl FromStr for DrugNoticeRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to DrugNoticeRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1926,7 +2001,9 @@ impl FromStr for UsageRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to UsageRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -1991,7 +2068,9 @@ impl FromStr for UsageSupplementaryRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to UsageSupplementaryRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -2056,7 +2135,9 @@ impl FromStr for RpNoticeRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to RpNoticeRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -2116,7 +2197,9 @@ impl FromStr for NoticeRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to NoticeRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -2182,7 +2265,9 @@ impl FromStr for InformationProvisionRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to InformationProvisionRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -2242,7 +2327,9 @@ impl FromStr for NoteRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to NoteRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -2302,7 +2389,9 @@ impl FromStr for FromPatientRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to FromPatientRecord, got \"{}\"", s)
+        ))
     }
 }
 
@@ -2386,7 +2475,9 @@ impl FromStr for FamilyPharmacistRecord {
                 })
             }
         }
-        Err(Error::InvalidArgument)
+        Err(Error::InvalidRecordLine(
+            format!("Cannot convert str to FamilyPharmacistRecord, got \"{}\"", s)
+        ))
     }
 }
 
