@@ -2485,13 +2485,6 @@ pub struct DrugBlock {
 }
 
 impl DrugBlock {
-    /*pub fn new() -> Self {
-        Self {
-            drug: DrugRecord{rp_number: 1, name: "カロナール錠200mg".to_string(), dosage: "2".to_string(), unit: "錠".to_string(), ..Default::default()},
-            drug_supplementary: Some(DrugSupplementaryRecord{rp_number: 1, content: "testtesttest".to_string(), ..Default::default()}),
-            drug_notice: None
-        }
-    }*/
     pub fn to_code(&self) -> String {
         let mut lines: Vec<String> = Vec::new();
         lines.push(self.drug.to_code());
