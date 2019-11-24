@@ -963,8 +963,8 @@ pub trait Record {
 /// Version record (バージョンレコード)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct VersionRecord {
-    number: u32,
-    output_category: OutputCategory, 
+    pub number: u32,
+    pub output_category: OutputCategory, 
 }
 
 impl VersionRecord {
@@ -1003,16 +1003,16 @@ impl FromStr for VersionRecord {
 /// No. 1: Patient record (患者情報レコード)
 #[derive(Debug, Clone, PartialEq)]
 pub struct PatientRecord {
-    name: String, // 患者氏名
-    gender: Gender, // 患者性別
-    day_of_birth: Date, // 患者生年月日
-    zip_code: Option<String>, // 患者郵便番号
-    address: Option<String>, // 患者住所
-    telephone: Option<String>, // 患者電話番号
-    emergency_contact_information: Option<String>, // 緊急連絡先
-    blood_type: Option<String>, // 血液型
-    body_weight: Option<f32>, // 体重
-    name_in_kana: Option<String>, // 患者氏名カナ
+    pub name: String, // 患者氏名
+    pub gender: Gender, // 患者性別
+    pub day_of_birth: Date, // 患者生年月日
+    pub zip_code: Option<String>, // 患者郵便番号
+    pub address: Option<String>, // 患者住所
+    pub telephone: Option<String>, // 患者電話番号
+    pub emergency_contact_information: Option<String>, // 緊急連絡先
+    pub blood_type: Option<String>, // 血液型
+    pub body_weight: Option<f32>, // 体重
+    pub name_in_kana: Option<String>, // 患者氏名カナ
 }
 
 impl PatientRecord {
@@ -1109,9 +1109,9 @@ impl FromStr for PatientRecord {
 /// No 2. Special patient note record (患者特記レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpecialPatientNoteRecord {
-    category: SpecialPatientNoteCategory, // 患者特記種別
-    content: String, // 患者特記内容
-    created_by: RecordCreator, // レコード作成者
+    pub category: SpecialPatientNoteCategory, // 患者特記種別
+    pub content: String, // 患者特記内容
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl SpecialPatientNoteRecord {
@@ -1177,10 +1177,10 @@ impl FromStr for SpecialPatientNoteRecord {
 /// No 3. OTC medicine record (一般用医薬品服用レコード )
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OtcDrugRecord {
-    drug_name: String, // 薬品名称
-    start_date: Option<Date>, // 服用開始年月日
-    end_date: Option<Date>, // 服用終了年月日
-    created_by: RecordCreator, // レコード作成者
+    pub drug_name: String, // 薬品名称
+    pub start_date: Option<Date>, // 服用開始年月日
+    pub end_date: Option<Date>, // 服用終了年月日
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl OtcDrugRecord {
@@ -1250,9 +1250,9 @@ impl FromStr for OtcDrugRecord {
 /// No 4. Memo record (手帳メモレコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MemoRecord {
-    content: String, // 手帳メモ情報
-    created_at: Option<Date>, // メモ入力年月日
-    created_by: RecordCreator, // レコード作成者
+    pub content: String, // 手帳メモ情報
+    pub created_at: Option<Date>, // メモ入力年月日
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl MemoRecord {
@@ -1318,8 +1318,8 @@ impl FromStr for MemoRecord {
 /// No 5. Date record (調剤等年月日レコード)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DateRecord {
-    created_at: Date, // 調剤等年月日
-    created_by: RecordCreator, // レコード作成者
+    pub created_at: Date, // 調剤等年月日
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl DateRecord {
@@ -1377,14 +1377,14 @@ impl FromStr for DateRecord {
 /// No 11. Pharmacy record (調剤－医療機関等レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PharmacyRecord {
-    name: String, // 医療機関等名称
-    prefecture: Option<Prefecture>, // 医療機関等都道府県
-    fee_table: Option<FeeTable>, // 医療機関等点数表
-    institution_code: Option<String>, // 医療機関等コード
-    zip_code: Option<String>, // 医療機関等郵便番号
-    address: Option<String>, // 医療機関等住所
-    telephone: Option<String>, // 医療機関等電話番号
-    created_by: RecordCreator, // レコード作成者
+    pub name: String, // 医療機関等名称
+    pub prefecture: Option<Prefecture>, // 医療機関等都道府県
+    pub fee_table: Option<FeeTable>, // 医療機関等点数表
+    pub institution_code: Option<String>, // 医療機関等コード
+    pub zip_code: Option<String>, // 医療機関等郵便番号
+    pub address: Option<String>, // 医療機関等住所
+    pub telephone: Option<String>, // 医療機関等電話番号
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl PharmacyRecord {
@@ -1472,9 +1472,9 @@ impl FromStr for PharmacyRecord {
 /// No 15. Pharmacist record (調剤－医師・薬剤師レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PharmacistRecord {
-    name: String, // 医師・薬剤師氏名
-    contact_information: Option<String>, // 医師・薬剤師連絡先
-    created_by: RecordCreator, // レコード作成者
+    pub name: String, // 医師・薬剤師氏名
+    pub contact_information: Option<String>, // 医師・薬剤師連絡先
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl PharmacistRecord {
@@ -1540,11 +1540,11 @@ impl FromStr for PharmacistRecord {
 /// No 51. Medical institution record (処方－医療機関レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MedicalInstitutionRecord {
-    name: String, // 医療機関名称
-    prefecture: Option<Prefecture>, // 医療機関都道府県
-    fee_table: Option<FeeTable>, // 医療機関点数表
-    institution_code: Option<String>, // 医療機関コード
-    created_by: RecordCreator, // レコード作成者
+    pub name: String, // 医療機関名称
+    pub prefecture: Option<Prefecture>, // 医療機関都道府県
+    pub fee_table: Option<FeeTable>, // 医療機関点数表
+    pub institution_code: Option<String>, // 医療機関コード
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl MedicalInstitutionRecord {
@@ -1619,9 +1619,9 @@ impl FromStr for MedicalInstitutionRecord {
 /// No 55. Physician record (処方－医師レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PhysicianRecord {
-    name: String, // 医師氏名
-    specialty: Option<String>, // 診療科名
-    created_by: RecordCreator, // レコード作成者
+    pub name: String, // 医師氏名
+    pub specialty: Option<String>, // 診療科名
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl PhysicianRecord {
@@ -1687,13 +1687,13 @@ impl FromStr for PhysicianRecord {
 /// No 201. Drug record (薬品レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DrugRecord {
-    rp_number: u32, // RP番号
-    name: String, // 薬品名称
-    dosage: String, // 用量
-    unit: String, // 単位名
-    drug_code_type: DrugCodeType, // 薬品コード種別
-    drug_code: Option<String>, // 薬品コード
-    created_by: RecordCreator, // レコード作成者
+    pub rp_number: u32, // RP番号
+    pub name: String, // 薬品名称
+    pub dosage: String, // 用量
+    pub unit: String, // 単位名
+    pub drug_code_type: DrugCodeType, // 薬品コード種別
+    pub drug_code: Option<String>, // 薬品コード
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl DrugRecord {
@@ -1776,9 +1776,9 @@ impl FromStr for DrugRecord {
 /// No 281. Drug supplementary record (薬品補足レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DrugSupplementaryRecord {
-    rp_number: u32, // RP番号
-    content: String, // 薬品補足情報
-    created_by: RecordCreator, // レコード作成者
+    pub rp_number: u32, // RP番号
+    pub content: String, // 薬品補足情報
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl DrugSupplementaryRecord {
@@ -1843,9 +1843,9 @@ impl FromStr for DrugSupplementaryRecord {
 /// No 291. Drug notice record (薬品服用注意レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DrugNoticeRecord {
-    rp_number: u32, // RP番号
-    content: String, // 内容
-    created_by: RecordCreator, // レコード作成者
+    pub rp_number: u32, // RP番号
+    pub content: String, // 内容
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl DrugNoticeRecord {
@@ -1910,14 +1910,14 @@ impl FromStr for DrugNoticeRecord {
 /// No 301. Usage record (用法レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UsageRecord {
-    rp_number: u32, // RP番号
-    name: String, // 用法名称
-    quantity: Option<u32>, // 調剤数量
-    unit: Option<String>, // 調剤単位
-    dosage_form: Option<DosageForm>, // 剤型コード
-    usage_code_type: Option<UsageCodeType>, // 用法コード種別
-    usage_code: Option<String>, // 用法コード
-    created_by: RecordCreator, // レコード作成者
+    pub rp_number: u32, // RP番号
+    pub name: String, // 用法名称
+    pub quantity: Option<u32>, // 調剤数量
+    pub unit: Option<String>, // 調剤単位
+    pub dosage_form: Option<DosageForm>, // 剤型コード
+    pub usage_code_type: Option<UsageCodeType>, // 用法コード種別
+    pub usage_code: Option<String>, // 用法コード
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl UsageRecord {
@@ -2006,9 +2006,9 @@ impl FromStr for UsageRecord {
 /// No 311. Usage supplementary record (用法補足レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UsageSupplementaryRecord {
-    rp_number: u32, // RP番号
-    content: String, // 用法補足情報
-    created_by: RecordCreator, // レコード作成者
+    pub rp_number: u32, // RP番号
+    pub content: String, // 用法補足情報
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl UsageSupplementaryRecord {
@@ -2073,9 +2073,9 @@ impl FromStr for UsageSupplementaryRecord {
 /// No 391. Rp notice record (処方服用注意レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RpNoticeRecord {
-    rp_number: u32, // RP番号
-    content: String, // 内容
-    created_by: RecordCreator, // レコード作成者
+    pub rp_number: u32, // RP番号
+    pub content: String, // 内容
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl RpNoticeRecord {
@@ -2140,8 +2140,8 @@ impl FromStr for RpNoticeRecord {
 /// No 401. Notice record (服用注意レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NoticeRecord {
-    content: String, // 内容
-    created_by: RecordCreator, // レコード作成者
+    pub content: String, // 内容
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl NoticeRecord {
@@ -2202,9 +2202,9 @@ impl FromStr for NoticeRecord {
 /// No 411. Information provision record (医療機関等提供情報レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InformationProvisionRecord {
-    content: String, // 内容
-    information_type: ProvidedInformationType, // 提供情報種別
-    created_by: RecordCreator, // レコード作成者
+    pub content: String, // 内容
+    pub information_type: ProvidedInformationType, // 提供情報種別
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl InformationProvisionRecord {
@@ -2270,8 +2270,8 @@ impl FromStr for InformationProvisionRecord {
 /// No 501. Note record (備考レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NoteRecord {
-    content: String, // 備考情報
-    created_by: RecordCreator, // レコード作成者
+    pub content: String, // 備考情報
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl NoteRecord {
@@ -2332,8 +2332,8 @@ impl FromStr for NoteRecord {
 /// No 601. From patient record (患者等記入レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FromPatientRecord {
-    content: String, // 患者等記入情報
-    created_at: Option<Date>, // 入力年月日
+    pub content: String, // 患者等記入情報
+    pub created_at: Option<Date>, // 入力年月日
 }
 
 impl FromPatientRecord {
@@ -2394,12 +2394,12 @@ impl FromStr for FromPatientRecord {
 /// No 701. Family pharmacist record (かかりつけ薬剤師レコード)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FamilyPharmacistRecord {
-    name: String, // かかりつけ薬剤師氏名
-    pharmacy_name: String, // 勤務先薬局名称
-    contact_information: String, // 連絡先
-    start_date: Option<Date>, // 担当開始年月日
-    end_date: Option<Date>, // 担当終了年月日
-    created_by: RecordCreator, // レコード作成者
+    pub name: String, // かかりつけ薬剤師氏名
+    pub pharmacy_name: String, // 勤務先薬局名称
+    pub contact_information: String, // 連絡先
+    pub start_date: Option<Date>, // 担当開始年月日
+    pub end_date: Option<Date>, // 担当終了年月日
+    pub created_by: RecordCreator, // レコード作成者
 }
 
 impl FamilyPharmacistRecord {
@@ -2479,9 +2479,9 @@ impl FromStr for FamilyPharmacistRecord {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DrugBlock {
-    drug: DrugRecord, // 薬品レコード
-    drug_supplementary: Vec<DrugSupplementaryRecord>, // 薬品補足レコード
-    drug_notice: Vec<DrugNoticeRecord>, // 薬品服用注意レコード
+    pub drug: DrugRecord, // 薬品レコード
+    pub drug_supplementary: Vec<DrugSupplementaryRecord>, // 薬品補足レコード
+    pub drug_notice: Vec<DrugNoticeRecord>, // 薬品服用注意レコード
 }
 
 impl DrugBlock {
@@ -2564,10 +2564,10 @@ impl FromStr for DrugBlock {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RpBlock {
-    drugs: Vec<DrugBlock>, // 薬品情報
-    usage: UsageRecord, // 用法レコード
-    usage_supplementary: Vec<UsageSupplementaryRecord>, // 用法補足レコード
-    rp_notice: Vec<RpNoticeRecord>, // 処方服用注意レコード
+    pub drugs: Vec<DrugBlock>, // 薬品情報
+    pub usage: UsageRecord, // 用法レコード
+    pub usage_supplementary: Vec<UsageSupplementaryRecord>, // 用法補足レコード
+    pub rp_notice: Vec<RpNoticeRecord>, // 処方服用注意レコード
 }
 
 impl RpBlock {
@@ -2685,8 +2685,8 @@ impl FromStr for RpBlock {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PrescriptionBlock {
-    physician: Option<PhysicianRecord>, // 処方－医師レコード
-    rps: Vec<RpBlock>, // RP情報
+    pub physician: Option<PhysicianRecord>, // 処方－医師レコード
+    pub rps: Vec<RpBlock>, // RP情報
 }
 
 impl PrescriptionBlock {
@@ -2780,17 +2780,17 @@ impl FromStr for PrescriptionBlock {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DispensingInformationBlock {
-    date: DateRecord, // 調剤等年月日レコード
-    pharmacy: PharmacyRecord, // 調剤－医療機関等レコード
-    pharmacist: Option<PharmacistRecord>, // 調剤－医師・薬剤師レコード
-    medical_institute: Option<MedicalInstitutionRecord>, // 処方－医療機関レコード
+    pub date: DateRecord, // 調剤等年月日レコード
+    pub pharmacy: PharmacyRecord, // 調剤－医療機関等レコード
+    pub pharmacist: Option<PharmacistRecord>, // 調剤－医師・薬剤師レコード
+    pub medical_institute: Option<MedicalInstitutionRecord>, // 処方－医療機関レコード
 
-    prescriptions: Vec<PrescriptionBlock>,  // 処方
+    pub prescriptions: Vec<PrescriptionBlock>,  // 処方
 
-    notice: Option<NoticeRecord>, // 服用注意レコード
-    information_provision: Option<InformationProvisionRecord>, //医療機関等提供情報レコード
-    note: Option<NoteRecord>, // 備考レコード
-    from_patient: Option<FromPatientRecord>, // 患者等記入レコード
+    pub notice: Option<NoticeRecord>, // 服用注意レコード
+    pub information_provision: Option<InformationProvisionRecord>, //医療機関等提供情報レコード
+    pub note: Option<NoteRecord>, // 備考レコード
+    pub from_patient: Option<FromPatientRecord>, // 患者等記入レコード
 }
 
 impl DispensingInformationBlock {
@@ -3069,15 +3069,15 @@ impl FromStr for DispensingInformationBlock {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MedicineNotebook {
-    version: VersionRecord, // バージョンレコード
-    patient: PatientRecord, // 患者情報レコード
-    special_patient_notes: Vec<SpecialPatientNoteRecord>, // 患者特記レコード
-    otc_drugs: Vec<OtcDrugRecord>, // 一般用医薬品服用レコード
-    memos: Vec<MemoRecord>, // 手帳メモレコード
+    pub version: VersionRecord, // バージョンレコード
+    pub patient: PatientRecord, // 患者情報レコード
+    pub special_patient_notes: Vec<SpecialPatientNoteRecord>, // 患者特記レコード
+    pub otc_drugs: Vec<OtcDrugRecord>, // 一般用医薬品服用レコード
+    pub memos: Vec<MemoRecord>, // 手帳メモレコード
 
-    dispensing_information: Vec<DispensingInformationBlock>, // 調剤情報
+    pub dispensing_information: Vec<DispensingInformationBlock>, // 調剤情報
 
-    family_pharmacist: Vec<FamilyPharmacistRecord>, // かかりつけ薬剤師レコード
+    pub family_pharmacist: Vec<FamilyPharmacistRecord>, // かかりつけ薬剤師レコード
 }
 
 impl MedicineNotebook {
