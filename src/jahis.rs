@@ -2498,6 +2498,16 @@ impl DrugBlock {
     }
 }
 
+impl Default for DrugBlock {
+    fn default() -> Self {
+        Self {
+            drug: DrugRecord::default(),
+            drug_supplementary: Vec::new(),
+            drug_notice: Vec::new(),
+        }
+    }
+}
+
 impl FromStr for DrugBlock {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -2574,6 +2584,17 @@ impl RpBlock {
             lines.push(record.to_code());
         }
         lines.join("\r\n")
+    }
+}
+
+impl Default for RpBlock {
+    fn default() -> Self {
+        Self {
+            drugs: Vec::new(),
+            usage: UsageRecord::default(),
+            usage_supplementary: Vec::new(),
+            rp_notice: Vec::new(),
+        }
     }
 }
 
@@ -2678,6 +2699,15 @@ impl PrescriptionBlock {
             lines.push(block.to_code());
         }
         lines.join("\r\n")
+    }
+}
+
+impl Default for PrescriptionBlock {
+    fn default() -> Self {
+        Self {
+            physician: None,
+            rps: Vec::new(),
+        }
     }
 }
 
@@ -2790,6 +2820,24 @@ impl DispensingInformationBlock {
             lines.push(record.to_code());
         }
         lines.join("\r\n")
+    }
+}
+
+impl Default for DispensingInformationBlock {
+    fn default() -> Self {
+        Self {
+            date: DateRecord::default(),
+            pharmacy: PharmacyRecord::default(),
+            pharmacist: None,
+            medical_institute: None,
+
+            prescriptions: Vec::new(),
+
+            notice: None,
+            information_provision: None,
+            note: None,
+            from_patient: None,
+        }
     }
 }
 
@@ -3053,6 +3101,22 @@ impl MedicineNotebook {
             lines.push(record.to_code());
         }
         lines.join("\r\n")
+    }
+}
+
+impl Default for MedicineNotebook {
+    fn default() -> Self {
+        Self {
+            version: VersionRecord::default(),
+            patient: PatientRecord::default(),
+            special_patient_notes: Vec::new(),
+            otc_drugs: Vec::new(),
+            memos: Vec::new(),
+
+            dispensing_information: Vec::new(),
+
+            family_pharmacist: Vec::new(),
+        }
     }
 }
 
