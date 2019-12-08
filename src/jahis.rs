@@ -1723,6 +1723,13 @@ impl DrugRecord {
             self.created_by.to_code()
         )
     }
+
+    pub fn to_block(self) -> DrugBlock {
+        DrugBlock {
+            drug: self,
+            .. Default::default()
+        }
+    }
 }
 
 impl Record for DrugRecord {
