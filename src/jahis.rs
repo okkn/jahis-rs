@@ -1016,22 +1016,12 @@ pub struct PatientRecord {
 }
 
 impl PatientRecord {
-    pub fn new(name: String, gender: Gender, day_of_birth: Date,
-                zip_code: Option<String>, address: Option<String>,
-                telephone: Option<String>, emergency_contact_information: Option<String>,
-                blood_type: Option<String>, body_weight: Option<f32>, 
-                name_in_kana: Option<String>) -> Self {
+    pub fn new(name: String, gender: Gender, day_of_birth: Date) -> Self {
         Self {
             name: name,
             gender: gender,
             day_of_birth: day_of_birth,
-            zip_code: zip_code,
-            address: address,
-            telephone: telephone,
-            emergency_contact_information: emergency_contact_information,
-            blood_type: blood_type,
-            body_weight: body_weight,
-            name_in_kana: name_in_kana,
+            .. Default::default()
         }
     }
 
