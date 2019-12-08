@@ -2485,6 +2485,12 @@ pub struct DrugBlock {
 }
 
 impl DrugBlock {
+    pub fn new(drug: DrugRecord) -> Self {
+        Self {
+            drug: drug,
+            .. Default::default()
+        }
+    }
     pub fn to_code(&self) -> String {
         let mut lines: Vec<String> = Vec::new();
         lines.push(self.drug.to_code());
@@ -2571,6 +2577,12 @@ pub struct RpBlock {
 }
 
 impl RpBlock {
+    pub fn new(usage: UsageRecord) -> Self {
+        Self {
+            usage: usage,
+            .. Default::default()
+        }
+    }
     pub fn to_code(&self) -> String {
         let mut lines: Vec<String> = Vec::new();
         for block in &self.drugs {
@@ -2690,6 +2702,11 @@ pub struct PrescriptionBlock {
 }
 
 impl PrescriptionBlock {
+    pub fn new() -> Self {
+        Self {
+            .. Default::default()
+        }
+    }
     pub fn to_code(&self) -> String {
         let mut lines: Vec<String> = Vec::new();
         if let Some(record) = &self.physician {
@@ -2794,6 +2811,13 @@ pub struct DispensingInformationBlock {
 }
 
 impl DispensingInformationBlock {
+    pub fn new(date: DateRecord, pharmacy: PharmacyRecord) -> Self {
+        Self {
+            date: date,
+            pharmacy: pharmacy,
+            .. Default::default()
+        }
+    }
     pub fn to_code(&self) -> String {
         let mut lines: Vec<String> = Vec::new();
         lines.push(self.date.to_code());
@@ -3081,6 +3105,12 @@ pub struct MedicineNotebook {
 }
 
 impl MedicineNotebook {
+    pub fn new(patient: PatientRecord) -> Self {
+        Self {
+            patient: patient,
+            .. Default::default()
+        }
+    }
     pub fn to_code(&self) -> String {
         let mut lines: Vec<String> = Vec::new();
         lines.push(self.version.to_code());
