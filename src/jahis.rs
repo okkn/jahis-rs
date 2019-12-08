@@ -1040,6 +1040,13 @@ impl PatientRecord {
             self.name_in_kana.as_ref().map(|s| s.clone()).unwrap_or_default()
         )
     }
+
+    pub fn create_medicine_notebook(self) -> MedicineNotebook {
+        MedicineNotebook {
+            patient: self,
+            .. Default::default()
+        }
+    }
 }
 
 impl Record for PatientRecord {
